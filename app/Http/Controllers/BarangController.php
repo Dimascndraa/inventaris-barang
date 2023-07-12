@@ -12,14 +12,31 @@ use Illuminate\Support\Facades\Storage;
 
 class BarangController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        if (auth()->user()->is_admin == 0) {
-            $id_ruang = auth()->user()->room_id;
-            $barang = Barang::where('room_id', $id_ruang)->get();
-        } else {
-            $barang =
-                Barang::orderBy('created_at', 'desc')->get();
+        // Ambil nilai dari formulir pencarian
+        $customName = $request->input('custom_name');
+        $templateBarang = $request->input('template_barang_id');
+
+        // Inisialisasi variabel barang sebagai array kosong
+        $barang = [];
+
+        // Cek apakah ada parameter pencarian
+        if ($customName || $templateBarang) {
+            // Query pencarian
+            $query = Barang::query();
+
+            // Lakukan filter pencarian jika ada nilai dari input pencarian
+            if ($customName) {
+                $query->where('custom_name', 'like', '%' . $customName . '%');
+            }
+
+            if ($templateBarang) {
+                $query->where('template_barang_id', $templateBarang);
+            }
+
+            // Ambil hasil pencarian
+            $barang = $query->orderBy('custom_name', 'asc')->get();
         }
 
         return view('pages.barang.index', [

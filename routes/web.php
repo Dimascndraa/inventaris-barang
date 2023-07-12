@@ -41,6 +41,7 @@ Route::middleware('admin')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::post('/barang', [BarangController::class, 'index']);
     Route::resource('/barang', BarangController::class);
     Route::resource('/template_barang', TemplateBarangController::class);
 });

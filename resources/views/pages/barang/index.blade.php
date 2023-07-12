@@ -6,21 +6,80 @@ use App\Models\Room;
 @section('title', 'Barang')
 @section('content')
 <main id="js-page-content" role="main" class="page-content">
-    @include('inc.breadcrumb', ['bcrumb' => 'bc_level_dua', 'bc_1' => 'Datatables'])
-    <div class="subheader">
-        @component('inc.subheader', ['subheader_title' => 'st_type_5'])
-        @slot('sh_icon')
-        table
-        @endslot
-        @slot('sh_titile_main')
-        DataTables: <span class='fw-300'>Barang</span> <sup class='badge badge-primary fw-500'>ADDON</sup>
-        @endslot
-        @slot('sh_descipt')
-        Create headache free searching, sorting and pagination tables without any complex
-        configuration
-        @endslot
-        @endcomponent
+    <div class="row justify-content-center">
+        <div class="col-xl-10">
+            <div id="panel-1" class="panel">
+                <div class="panel-hdr">
+                    <h2>
+                        Form <span class="fw-300"><i>Pencarian</i></span>
+                    </h2>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content">
+
+                        <form action="/barang" method="get">
+                            @csrf
+                            <div class="row justify-content-center">
+                                <div class="col-xl-4">
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <div class="col-xl-4">
+                                                <label for="custom_name">Nama Barang</label>
+                                            </div>
+                                            <div class="col-xl">
+                                                <input type="text" value="{{ request('custom_name') }}"
+                                                    style="border: 0; border-bottom: 1.9px solid #FD61AA; margin-top: -.5rem; border-radius: 0"
+                                                    class="form-control" id="custom_name" name="custom_name">
+                                                @error('custom_name')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xl-4">
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <div class="col-xl-4">
+                                                <label class="form-label" for="template_barang_id">
+                                                    Kategori Barang
+                                                </label>
+                                            </div>
+                                            <div class="col-xl">
+                                                <select
+                                                    class="form-control w-100 @error('template_barang_id') is-invalid @enderror"
+                                                    id="template_barang_id" name="template_barang_id"
+                                                    style="border: 0; border-bottom: 1.9px solid #FD61AA; margin-top: -.5rem; border-radius: 0">
+                                                    <option value=""> </option>
+                                                    @foreach ($templates as $template)
+                                                    <option value="{{ $template->id }}" {{
+                                                        request('template_barang_id')==$template->id ? 'selected' :
+                                                        '' }}>
+                                                        {{ $template->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('template_barang_id')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xl-3">
+                                    <button type="submit" class="btn btn-outline-primary waves-effect waves-themed">
+                                        <span class="fal fa-search mr-1"></span>
+                                        Cari
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
     <div class="row mb-5">
         <div class="col-xl-12">
             <button type="button" class="btn btn-primary waves-effect waves-themed" data-toggle="modal"
@@ -411,15 +470,12 @@ use App\Models\Room;
                         <table id="dt-basic-example" class="table table-bordered table-hover table-striped w-100">
                             <thead>
                                 <tr>
-                                    {{-- <th>Foto</th> --}}
                                     <th>No</th>
                                     <th>Nama Barang</th>
                                     <th>Merk</th>
                                     <th>Kategori Barang</th>
                                     <th>Urutan Barang</th>
                                     <th>Kode Barang</th>
-                                    {{-- <th>Kondisi</th> --}}
-                                    {{-- <th>Tahun Pengadaan</th> --}}
                                     <th>Ruangan</th>
                                     <th class="no-export" style="white-space: nowrap">Aksi</th>
                                 </tr>
@@ -492,7 +548,6 @@ use App\Models\Room;
                                         </div>
                                     </div>
                                 </div>
-
                                 <div class="modal fade" id="pinjam{{ $barang->id }}" tabindex="-1" role="dialog"
                                     aria-hidden="true">
                                     <div class="modal-dialog modal-lg" role="document">
@@ -555,7 +610,6 @@ use App\Models\Room;
                                         </div>
                                     </div>
                                 </div>
-
                                 <div class="modal fade" id="kembali{{ $barang->id }}" tabindex="-1" role="dialog"
                                     aria-hidden="true">
                                     <div class="modal-dialog modal-lg" role="document">
@@ -628,13 +682,13 @@ use App\Models\Room;
                                     @else
                                     <td style="white-space: normal">{{ strtoupper($barang->custom_name) }}</td>
                                     @endif
-                                    <td style="white-space: normal">{{ $barang->merk }}</td>
+                                    <td style="white-space: normal">{{ $barang->merk === Null ? "*tidak diketahui" :
+                                        $barang->merk }}</td>
                                     <td style="white-space: normal">{{ $barang->template_barang->category->name }}
                                     </td>
                                     <td style="white-space: normal">{{ $barang->urutan_barang }}</td>
-                                    <td style="white-space: normal">{{ strtoupper($barang->item_code) }}</td>
-                                    {{-- <td style="white-space: normal">{{ $barang->condition }}</td> --}}
-                                    {{-- <td style="white-space: normal">{{ $barang->bidding_year }}</td> --}}
+                                    <td style="white-space: normal">{{ strtoupper($barang->item_code. " " .
+                                        $barang->merk) }}</td>
                                     @if ($barang->room === null)
                                     <td style="white-space: normal">*Barang belum di Ruangan</td>
                                     @else
@@ -873,8 +927,6 @@ use App\Models\Room;
                                     <th>Kategori Barang</th>
                                     <th>Urutan Barang</th>
                                     <th>Kode Barang</th>
-                                    {{-- <th>Kondisi</th> --}}
-                                    {{-- <th>Tahun Pengadaan</th> --}}
                                     <th>Ruangan</th>
                                     <th class="no-export" style="white-space: nowrap">Aksi</th>
                                 </tr>
@@ -887,6 +939,7 @@ use App\Models\Room;
         </div>
     </div>
 </main>
+
 <!-- Modal Large -->
 <div class="modal fade" id="default-example-modal-lg" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
