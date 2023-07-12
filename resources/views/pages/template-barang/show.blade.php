@@ -6,21 +6,6 @@ use App\Models\Room;
 @section('title', 'Barang')
 @section('content')
 <main id="js-page-content" role="main" class="page-content">
-    @include('inc.breadcrumb', ['bcrumb' => 'bc_level_dua', 'bc_1' => 'Datatables'])
-    <div class="subheader">
-        @component('inc.subheader', ['subheader_title' => 'st_type_5'])
-        @slot('sh_icon')
-        table
-        @endslot
-        @slot('sh_titile_main')
-        DataTables: <span class='fw-300'>Barang</span> <sup class='badge badge-primary fw-500'>ADDON</sup>
-        @endslot
-        @slot('sh_descipt')
-        Create headache free searching, sorting and pagination tables without any complex
-        configuration
-        @endslot
-        @endcomponent
-    </div>
     <div class="row mb-5">
         <div class="col-xl-12">
             <button type="button" class="btn btn-primary waves-effect waves-themed" data-toggle="modal"
@@ -411,14 +396,11 @@ use App\Models\Room;
                         <table id="dt-basic-example" class="table table-bordered table-hover table-striped w-100">
                             <thead>
                                 <tr>
-                                    {{-- <th>Foto</th> --}}
                                     <th>No</th>
                                     <th>Nama Barang</th>
                                     <th>Kategori Barang</th>
                                     <th>Urutan Barang</th>
                                     <th>Kode Barang</th>
-                                    {{-- <th>Kondisi</th> --}}
-                                    {{-- <th>Tahun Pengadaan</th> --}}
                                     <th>Ruangan</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -436,9 +418,9 @@ use App\Models\Room;
                                                 <div class="modal-header">
                                                     <h5 class="modal-title">Pindahkan @if ($barang->custom_name ===
                                                         null)
-                                                        {{ $barang->template_barang->name }}
+                                                        {{ strtoupper($barang->template_barang->name) }}
                                                         @else
-                                                        {{ $barang->custom_name }}
+                                                        {{ strtoupper($barang->custom_name) }}
                                                         @endif ke Ruang</h5>
                                                     <button type="button" class="close" data-dismiss="modal"
                                                         aria-label="Close">
@@ -622,16 +604,16 @@ use App\Models\Room;
                                 <tr>
                                     <td style="white-space: normal">{{ $loop->iteration }}</td>
                                     @if ($barang->custom_name === null)
-                                    <td style="white-space: normal">{{ $barang->template_barang->name }}</td>
+                                    <td style="white-space: normal">{{ strtoupper($barang->template_barang->name) }}
+                                    </td>
                                     @else
-                                    <td style="white-space: normal">{{ $barang->custom_name }}</td>
+                                    <td style="white-space: normal">{{ strtoupper($barang->custom_name) }}</td>
                                     @endif
-                                    <td style="white-space: normal">{{ $barang->template_barang->category->name }}
+                                    <td style="white-space: normal">{{
+                                        strtoupper($barang->template_barang->category->name) }}
                                     </td>
                                     <td style="white-space: normal">{{ $barang->urutan_barang }}</td>
-                                    <td style="white-space: normal">{{ $barang->item_code }}</td>
-                                    {{-- <td style="white-space: normal">{{ $barang->condition }}</td> --}}
-                                    {{-- <td style="white-space: normal">{{ $barang->bidding_year }}</td> --}}
+                                    <td style="white-space: normal">{{ strtoupper($barang->item_code) }}</td>
                                     @if ($barang->room === null)
                                     <td style="white-space: normal">*Barang belum di Ruangan</td>
                                     @else

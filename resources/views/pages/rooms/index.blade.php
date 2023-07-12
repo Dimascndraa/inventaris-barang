@@ -6,21 +6,6 @@ use App\Models\Barang;
 @section('title', 'Ruangan')
 @section('content')
 <main id="js-page-content" role="main" class="page-content">
-    @include('inc.breadcrumb', ['bcrumb' => 'bc_level_dua', 'bc_1' => 'Datatables'])
-    <div class="subheader">
-        @component('inc.subheader', ['subheader_title' => 'st_type_5'])
-        @slot('sh_icon')
-        table
-        @endslot
-        @slot('sh_titile_main')
-        DataTables: <span class='fw-300'>Ruangan</span> <sup class='badge badge-primary fw-500'>ADDON</sup>
-        @endslot
-        @slot('sh_descipt')
-        Create headache free searching, sorting and pagination tables without any complex
-        configuration
-        @endslot
-        @endcomponent
-    </div>
     <div class="row mb-5">
         <div class="col-xl-12">
             <button type="button" class="btn btn-primary waves-effect waves-themed" data-toggle="modal"
@@ -424,7 +409,7 @@ use App\Models\Barang;
                                 <tr>
                                     <td style="white-space: normal">{{ $loop->iteration }}</td>
                                     <td style="white-space: normal"><a href="/rooms/{{ $room->id }}" class="">{{
-                                            $room->name }}</a></td>
+                                            strtoupper($room->name) }}</a></td>
                                     <td style="white-space: normal">{{ $room->room_code }}</td>
                                     <td style="white-space: normal">{{ count(Barang::where('room_id', $room->id)->get())
                                         }}</td>

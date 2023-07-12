@@ -5,21 +5,6 @@ use App\Models\Barang;
 @section('title', 'Ruangan')
 @section('content')
 <main id="js-page-content" role="main" class="page-content">
-    @include('inc.breadcrumb', ['bcrumb' => 'bc_level_dua', 'bc_1' => 'Datatables'])
-    <div class="subheader">
-        @component('inc.subheader', ['subheader_title' => 'st_type_5'])
-        @slot('sh_icon')
-        table
-        @endslot
-        @slot('sh_titile_main')
-        DataTables: <span class='fw-300'>Ruangan</span> <sup class='badge badge-primary fw-500'>ADDON</sup>
-        @endslot
-        @slot('sh_descipt')
-        Create headache free searching, sorting and pagination tables without any complex
-        configuration
-        @endslot
-        @endcomponent
-    </div>
     <div class="row mb-5">
         <div class="col-xl-6">
             <a href="/rooms" class="btn btn-primary waves-effect waves-themed">
@@ -452,7 +437,7 @@ use App\Models\Barang;
                                     <td><a href="/categories/{{ $barang->template_barang->category->id }}">{{
                                             $barang->template_barang->category->name }}</a></td>
                                     <td>{{ $barang->condition }}</td>
-                                    <td>{{ $barang->room->name }}</td>
+                                    <td>{{ strtoupper($barang->room->name) }}</td>
                                     <td>{{ strtoupper($barang->item_code . " " . $barang->merk) }}</td>
                                     <td class="no-export">
                                         <button type="button" class="badge mx-1 badge-primary p-2 border-0 text-white"
