@@ -42,6 +42,7 @@ Route::middleware('admin')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/barang', [BarangController::class, 'index']);
+    Route::get('/barang/belum-di-ruangan/show', [BarangController::class, 'barang_belum_diruangan']);
     Route::resource('/barang', BarangController::class);
     Route::resource('/template_barang', TemplateBarangController::class);
 });

@@ -30,7 +30,6 @@ class BarangController extends Controller
             if ($customName) {
                 $query->where('custom_name', 'like', '%' . $customName . '%');
             }
-
             if ($templateBarang) {
                 $query->where('template_barang_id', $templateBarang);
             }
@@ -41,6 +40,17 @@ class BarangController extends Controller
 
         return view('pages.barang.index', [
             'barangs' => $barang,
+            'templates' => TemplateBarang::all(),
+            'categories' => BarangCategory::all(),
+            'rooms' => Room::all(),
+            'i' => ControlPanel::all()->first()
+        ]);
+    }
+
+    public function barang_belum_diruangan()
+    {
+        return view('pages.barang.barang-belum-diruangan', [
+            'barangs' => Barang::where('room_id', 0)->get(),
             'templates' => TemplateBarang::all(),
             'categories' => BarangCategory::all(),
             'rooms' => Room::all(),
@@ -75,7 +85,7 @@ class BarangController extends Controller
         $validatedData['item_code'] = $item_code;
 
         Barang::where('id', $barang->id)->update($validatedData);
-        return redirect('/barang')->with('success', 'Barang berhasil dipindahkan!');
+        return redirect('/barang/belum-di-ruangan/show')->with('success', 'Barang berhasil dipindahkan!');
     }
 
     public function pinjam(Request $request, Barang $barang)

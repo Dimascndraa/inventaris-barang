@@ -16,7 +16,7 @@ class CreateBarangsTable extends Migration
         Schema::create('barangs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('template_barang_id');
-            $table->integer('room_id')->nullable();
+            $table->integer('room_id')->default(0);
             $table->boolean('barang_ruang')->default(false);
             $table->string('custom_name')->nullable();
             $table->string('condition');
