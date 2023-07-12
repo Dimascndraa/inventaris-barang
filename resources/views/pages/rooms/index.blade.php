@@ -1,15 +1,24 @@
+@php
+use App\Models\Barang;
+@endphp
+
 @extends('inc.layout')
-@section('title','Basic')
+@section('title', 'Ruangan')
 @section('content')
 <main id="js-page-content" role="main" class="page-content">
-    @include('inc.breadcrumb',['bcrumb' => 'bc_level_dua','bc_1'=>'Datatables'])
+    @include('inc.breadcrumb', ['bcrumb' => 'bc_level_dua', 'bc_1' => 'Datatables'])
     <div class="subheader">
-        @component('inc.subheader',['subheader_title'=>'st_type_5'])
-        @slot('sh_icon') table @endslot
-        @slot('sh_titile_main') DataTables: <span class='fw-300'>Basic</span> <sup
-            class='badge badge-primary fw-500'>ADDON</sup> @endslot
-        @slot('sh_descipt') Create headache free searching, sorting and pagination tables without any complex
-        configuration @endslot
+        @component('inc.subheader', ['subheader_title' => 'st_type_5'])
+        @slot('sh_icon')
+        table
+        @endslot
+        @slot('sh_titile_main')
+        DataTables: <span class='fw-300'>Ruangan</span> <sup class='badge badge-primary fw-500'>ADDON</sup>
+        @endslot
+        @slot('sh_descipt')
+        Create headache free searching, sorting and pagination tables without any complex
+        configuration
+        @endslot
         @endcomponent
     </div>
     <div class="row mb-5">
@@ -402,8 +411,10 @@
                         <table id="dt-basic-example" class="table table-bordered table-hover table-striped w-100">
                             <thead>
                                 <tr>
+                                    <th>No</th>
                                     <th>Nama Ruang</th>
                                     <th>Kode Ruang</th>
+                                    <th>Jumlah Barang</th>
                                     <th>Lantai</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -411,9 +422,12 @@
                             <tbody>
                                 @foreach ($rooms as $room)
                                 <tr>
+                                    <td style="white-space: normal">{{ $loop->iteration }}</td>
                                     <td style="white-space: normal"><a href="/rooms/{{ $room->id }}" class="">{{
                                             $room->name }}</a></td>
                                     <td style="white-space: normal">{{ $room->room_code }}</td>
+                                    <td style="white-space: normal">{{ count(Barang::where('room_id', $room->id)->get())
+                                        }}</td>
                                     <td style="white-space: normal">{{ $room->floor }}</td>
                                     <td style="white-space: normal">
                                         <button type="button" class="badge mx-1 badge-primary p-2 border-0 text-white"
@@ -493,8 +507,10 @@
                             </tbody>
                             <tfoot>
                                 <tr>
+                                    <th>No</th>
                                     <th>Nama Ruang</th>
                                     <th>Kode Ruang</th>
+                                    <th>Jumlah Barang</th>
                                     <th>Lantai</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -562,31 +578,98 @@
 @endsection
 @section('plugin')
 <script src="/js/datagrid/datatables/datatables.bundle.js"></script>
+<script src="/js/datatable/jszip.min.js"></script>
+
 <script>
     /* demo scripts for change table color */
-            /* change background */
-            $(document).ready(function()
-            {
-                $('#dt-basic-example').dataTable(
-                {
-                    responsive: true
-                });
-
-                $('.js-thead-colors a').on('click', function()
-                {
-                    var theadColor = $(this).attr("data-bg");
-                    console.log(theadColor);
-                    $('#dt-basic-example thead').removeClassPrefix('bg-').addClass(theadColor);
-                });
-
-                $('.js-tbody-colors a').on('click', function()
-                {
-                    var theadColor = $(this).attr("data-bg");
-                    console.log(theadColor);
-                    $('#dt-basic-example').removeClassPrefix('bg-').addClass(theadColor);
-                });
-
+        /* change background */
+        $(document).ready(function() {
+            $('#dt-basic-example').dataTable({
+                responsive: true,
+                dom: 'Bfrtip',
+                buttons: [{
+                        extend: 'print',
+                        text: 'Print',
+                        className: 'float-right btn btn-primary',
+                        exportOptions: {
+                            columns: ':not(.no-export)'
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        text: 'Download as Excel',
+                        className: 'float-right btn btn-success',
+                        exportOptions: {
+                            columns: ':not(.no-export)'
+                        }
+                    },
+                    {
+                        extend: 'colvis',
+                        text: 'Column Visibility',
+                        titleAttr: 'Col visibility',
+                        className: 'float-right mb-3 btn btn-warning',
+                        exportOptions: {
+                            columns: ':not(.no-export)'
+                        },
+                        postfixButtons: [{
+                                extend: 'print',
+                                text: 'Print',
+                                exportOptions: {
+                                    columns: ':visible:not(.no-export)'
+                                }
+                            },
+                            {
+                                extend: 'excel',
+                                text: 'Download as Excel',
+                                exportOptions: {
+                                    columns: ':visible:not(.no-export)'
+                                }
+                            }
+                        ]
+                    }
+                ]
             });
 
+            $('.js-thead-colors a').on('click', function() {
+                var theadColor = $(this).attr("data-bg");
+                console.log(theadColor);
+                $('#dt-basic-example thead').removeClassPrefix('bg-').addClass(theadColor);
+            });
+
+            $('.js-tbody-colors a').on('click', function() {
+                var theadColor = $(this).attr("data-bg");
+                console.log(theadColor);
+                $('#dt-basic-example').removeClassPrefix('bg-').addClass(theadColor);
+            });
+
+        });
+
+        function previewImage() {
+            const image = document.querySelector('#foto');
+            const imgPreview = document.querySelector('.image-preview')
+
+            imgPreview.style.display = 'block';
+
+            const oFReader = new FileReader();
+            oFReader.readAsDataURL(image.files[0])
+
+            oFReader.onload = function(oFREvent) {
+                imgPreview.src = oFREvent.target.result;
+            }
+        }
+
+        function previewImage2() {
+            const image = document.querySelector('#foto2');
+            const imgPreview = document.querySelector('.image-preview2')
+
+            imgPreview.style.display = 'block';
+
+            const oFReader = new FileReader();
+            oFReader.readAsDataURL(image.files[0])
+
+            oFReader.onload = function(oFREvent) {
+                imgPreview.src = oFREvent.target.result;
+            }
+        }
 </script>
 @endsection

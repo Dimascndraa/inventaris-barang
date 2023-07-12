@@ -1,3 +1,7 @@
+@php
+use App\Models\Room;
+@endphp
+
 @extends('inc.layout')
 @section('title', 'Barang')
 @section('content')
@@ -408,18 +412,20 @@
                             <thead>
                                 <tr>
                                     {{-- <th>Foto</th> --}}
+                                    <th>No</th>
                                     <th>Nama Barang</th>
-                                    <th>Kategori Barang</th>
                                     <th>Merk</th>
-                                    <th>Kondisi</th>
-                                    <th>Tahun Pengadaan</th>
+                                    <th>Kategori Barang</th>
+                                    <th>Urutan Barang</th>
+                                    <th>Kode Barang</th>
+                                    {{-- <th>Kondisi</th> --}}
+                                    {{-- <th>Tahun Pengadaan</th> --}}
                                     <th>Ruangan</th>
-                                    <th>Aksi</th>
+                                    <th class="no-export" style="white-space: nowrap">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($barangs as $barang)
-
                                 <div class="modal fade" id="ruangan{{ $barang->id }}" tabindex="-1" role="dialog"
                                     aria-hidden="true">
                                     <div class="modal-dialog modal-lg" role="document">
@@ -429,15 +435,23 @@
                                                 @method('put')
                                                 @csrf
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title">Pindahkan @if($barang->custom_name === null)
-                                                        {{ $barang->template_barang->name }} @else {{
-                                                        $barang->custom_name }} @endif ke Ruang</h5>
+                                                    <h5 class="modal-title">Pindahkan @if ($barang->custom_name ===
+                                                        null)
+                                                        {{ $barang->template_barang->name }}
+                                                        @else
+                                                        {{ $barang->custom_name }}
+                                                        @endif ke Ruang</h5>
                                                     <button type="button" class="close" data-dismiss="modal"
                                                         aria-label="Close">
                                                         <span aria-hidden="true"><i class="fal fa-times"></i></span>
                                                     </button>
                                                 </div>
                                                 <div class="modal-body">
+                                                    <input type="hidden" name="instance_code"
+                                                        value="{{ $i->instance_code }}">
+                                                    <input type="hidden" name="category_code"
+                                                        value="{{ $barang->template_barang->category->category_code }}">
+                                                    <input type="hidden" name="barang_id" value="{{ $barang->id }}">
                                                     <div class="form-group">
                                                         <label for="room_id">Nama Ruang</label>
                                                         <select
@@ -445,18 +459,19 @@
                                                             id="single-default" name="room_id">
                                                             <optgroup label="Ruangan">
                                                                 @foreach ($rooms as $room)
-                                                                @if (old("room_id") == $room->id ||
-                                                                $room->room_id == $room->id)
-                                                                <option value="{{ $room->id }}" selected>{{
-                                                                    $room->name }}</option>
+                                                                @if (old('room_id') == $room->id || $room->room_id ==
+                                                                $room->id)
+                                                                <option value="{{ $room->id }}" selected>{{ $room->name
+                                                                    }}</option>
                                                                 @else
-                                                                <option value="{{ $room->id }}">{{ $room->name
-                                                                    }}
+                                                                <option value="{{ $room->id }}">
+                                                                    {{ $room->name }}
                                                                 </option>
                                                                 @endif
                                                                 @endforeach
                                                                 @error('room_id')
-                                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                                <div class="invalid-feedback">{{ $message }}
+                                                                </div>
                                                                 @enderror
                                                             </optgroup>
                                                         </select>
@@ -469,8 +484,135 @@
                                                     <button type="button" class="btn btn-secondary"
                                                         data-dismiss="modal">Close</button>
                                                     <button type="submit" class="btn btn-primary">
-                                                        <span class="fal fa-pencil mr-1"></span>
-                                                        Ubah
+                                                        <span class="fal fa-arrow-circle-right mr-1"></span>
+                                                        Pindahkan
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="modal fade" id="pinjam{{ $barang->id }}" tabindex="-1" role="dialog"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <form autocomplete="off" novalidate
+                                                action="/barang/{{ $barang->id }}/pinjam" method="post"
+                                                enctype="multipart/form-data">
+                                                @method('put')
+                                                @csrf
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Pindahkan @if ($barang->custom_name ===
+                                                        null)
+                                                        {{ $barang->template_barang->name }}
+                                                        @else
+                                                        {{ $barang->custom_name }}
+                                                        @endif ke Ruang</h5>
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                        aria-label="Close">
+                                                        <span aria-hidden="true"><i class="fal fa-times"></i></span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="form-group">
+                                                        <label for="ruang_pinjam">Nama Ruang</label>
+                                                        <select
+                                                            class="form-control w-100 @error('ruang_pinjam') is-invalid @enderror"
+                                                            id="single-default" name="ruang_pinjam">
+                                                            <optgroup label="Ruangan">
+                                                                @foreach ($rooms as $room)
+                                                                @if (old('ruang_pinjam') == $room->id ||
+                                                                $room->ruang_pinjam == $room->id)
+                                                                <option value="{{ $room->id }}" selected>{{ $room->name
+                                                                    }}</option>
+                                                                @else
+                                                                <option value="{{ $room->id }}">
+                                                                    {{ $room->name }}
+                                                                </option>
+                                                                @endif
+                                                                @endforeach
+                                                                @error('ruang_pinjam')
+                                                                <div class="invalid-feedback">{{ $message }}
+                                                                </div>
+                                                                @enderror
+                                                            </optgroup>
+                                                        </select>
+                                                        @error('ruang_pinjam')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-dismiss="modal">Close</button>
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <span class="fal fa-arrow-circle-right mr-1"></span>
+                                                        Pinjam
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="modal fade" id="kembali{{ $barang->id }}" tabindex="-1" role="dialog"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <form autocomplete="off" novalidate
+                                                action="/barang/{{ $barang->id }}/kembali" method="post"
+                                                enctype="multipart/form-data">
+                                                @method('put')
+                                                @csrf
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Kembalikan @if ($barang->custom_name ===
+                                                        null)
+                                                        {{ $barang->template_barang->name }}
+                                                        @else
+                                                        {{ $barang->custom_name }}
+                                                        @endif
+                                                    </h5>
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                        aria-label="Close">
+                                                        <span aria-hidden="true"><i class="fal fa-times"></i></span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="form-group">
+                                                        <label for="ruang_pinjam">Nama Ruang</label>
+                                                        <select
+                                                            class="form-control w-100 @error('ruang_pinjam') is-invalid @enderror"
+                                                            id="single-default" name="ruang_pinjam">
+                                                            <optgroup label="Ruangan">
+                                                                @foreach ($rooms as $room)
+                                                                @if (old('ruang_pinjam') == $room->id ||
+                                                                $room->ruang_pinjam == $room->id)
+                                                                <option value="{{ $room->id }}" selected>{{ $room->name
+                                                                    }}</option>
+                                                                @else
+                                                                <option value="{{ $room->id }}">
+                                                                    {{ $room->name }}
+                                                                </option>
+                                                                @endif
+                                                                @endforeach
+                                                                @error('ruang_pinjam')
+                                                                <div class="invalid-feedback">{{ $message }}
+                                                                </div>
+                                                                @enderror
+                                                            </optgroup>
+                                                        </select>
+                                                        @error('room_id')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-dismiss="modal">Close</button>
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <span class="fal fa-arrow-circle-left mr-1"></span>
+                                                        Kembalikan
                                                     </button>
                                                 </div>
                                             </form>
@@ -479,23 +621,33 @@
                                 </div>
 
                                 <tr>
-                                    {{-- <td style="white-space: normal">{{ $barang->template_barang->foto }}</td> --}}
+                                    <td style="white-space: normal">{{ $loop->iteration }}</td>
                                     @if ($barang->custom_name === null)
-                                    <td style="white-space: normal">{{ $barang->template_barang->name }}</td>
+                                    <td style="white-space: normal">{{ strtoupper($barang->template_barang->name) }}
+                                    </td>
                                     @else
-                                    <td style="white-space: normal">{{ $barang->custom_name }}</td>
+                                    <td style="white-space: normal">{{ strtoupper($barang->custom_name) }}</td>
                                     @endif
-                                    <td style="white-space: normal">{{
-                                        $barang->template_barang->category->name }}</td>
-                                    <td style="white-space: normal">{{ $barang->template_barang->merk }}</td>
-                                    <td style="white-space: normal">{{ $barang->condition }}</td>
-                                    <td style="white-space: normal">{{ $barang->bidding_year }}</td>
+                                    <td style="white-space: normal">{{ $barang->merk }}</td>
+                                    <td style="white-space: normal">{{ $barang->template_barang->category->name }}
+                                    </td>
+                                    <td style="white-space: normal">{{ $barang->urutan_barang }}</td>
+                                    <td style="white-space: normal">{{ strtoupper($barang->item_code) }}</td>
+                                    {{-- <td style="white-space: normal">{{ $barang->condition }}</td> --}}
+                                    {{-- <td style="white-space: normal">{{ $barang->bidding_year }}</td> --}}
                                     @if ($barang->room === null)
                                     <td style="white-space: normal">*Barang belum di Ruangan</td>
                                     @else
-                                    <td style="white-space: normal">{{ $barang->room->name }}</td>
+                                    @if ($barang->pinjam == true)
+                                    <td style="white-space: normal">Barang dipinjam ke ruang
+                                        {{ Room::where('id', $barang->ruang_pinjam)->first()->name }}
+                                    </td>
+                                    @else
+                                    <td style="white-space: normal"><a href="/rooms/{{ $barang->room->id }}" class="">{{
+                                            $barang->room->name }}</a></td>
                                     @endif
-                                    <td style="white-space: normal">
+                                    @endif
+                                    <td style="white-space: nowrap" class="no-export">
                                         <button type="button" class="badge mx-1 badge-primary p-2 border-0 text-white"
                                             data-toggle="modal" data-target="#ubah-barang{{ $barang->id }}"
                                             title="Ubah">
@@ -509,11 +661,23 @@
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
-                                        @if ($barang->room === null)
-                                        <button type="button" class="badge mx-1 badge-success p-2 border-0 text-white"
+                                        <button type="button" class="badge mx-1 badge-secondary p-2 border-0 text-white"
                                             data-toggle="modal" data-target="#ruangan{{ $barang->id }}"
-                                            title="ke Ruangan">
+                                            title="Pindahkan">
+                                            <span class="fal fa-sign-in"></span>
+                                        </button>
+                                        @if ($barang->pinjam == false && $barang->room != null)
+                                        <button type="button" class="badge mx-1 badge-success p-2 border-0 text-white"
+                                            data-toggle="modal" data-target="#pinjam{{ $barang->id }}"
+                                            title="Pinjamkan">
                                             <span class="fal fa-arrow-circle-right"></span>
+                                        </button>
+                                        @endif
+                                        @if ($barang->pinjam == true && $barang->room != null)
+                                        <button type="button" class="badge mx-1 badge-success p-2 border-0 text-white"
+                                            data-toggle="modal" data-target="#kembali{{ $barang->id }}"
+                                            title="Kembalikan">
+                                            <span class="fal fa-arrow-circle-left"></span>
                                         </button>
                                         @endif
                                     </td>
@@ -548,24 +712,56 @@
                                                         @enderror
                                                     </div>
                                                     <div class="form-group">
+                                                        <label for="merk">Merk
+                                                            <sup>(Opsional)</sup></label>
+                                                        <input type="text" value="{{ old('merk', $barang->merk) }}"
+                                                            class="form-control @error('merk') is-invalid @enderror"
+                                                            id="merk" name="merk" placeholder="Merk">
+                                                        @error('merk')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="item_code">Kode Barang</label>
+                                                        <input type="text"
+                                                            value="{{ old('item_code', $barang->item_code) }}"
+                                                            class="form-control @error('item_code') is-invalid @enderror"
+                                                            id="item_code" name="item_code" placeholder="Kode Barang">
+                                                        @error('item_code')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="urutan_barang">Urutan Barang</label>
+                                                        <input type="text"
+                                                            value="{{ old('urutan_barang', $barang->urutan_barang) }}"
+                                                            class="form-control @error('urutan_barang') is-invalid @enderror"
+                                                            id="urutan_barang" name="urutan_barang"
+                                                            placeholder="Kode Barang">
+                                                        @error('urutan_barang')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="form-group">
                                                         <label for="template_barang_id">Barang</label>
                                                         <select
                                                             class="form-control w-100 @error('template_barang_id') is-invalid @enderror"
                                                             id="single-default" name="template_barang_id">
                                                             <optgroup label="Kategori Barang">
-                                                                @foreach ($template as $barang)
-                                                                @if (old("template_barang_id") == $barang->id ||
-                                                                $barang->template_barang_id == $barang->id)
-                                                                <option value="{{ $barang->id }}" selected>{{
-                                                                    $barang->name }}</option>
+                                                                @foreach ($templates as $template)
+                                                                @if (old('template_barang_id') == $template->id ||
+                                                                $barang->template_barang_id == $template->id)
+                                                                <option value="{{ $template->id }}" selected>{{
+                                                                    $template->name }}</option>
                                                                 @else
-                                                                <option value="{{ $barang->id }}">{{ $barang->name
-                                                                    }}
+                                                                <option value="{{ $template->id }}">
+                                                                    {{ $template->name }}
                                                                 </option>
                                                                 @endif
                                                                 @endforeach
                                                                 @error('template_barang_id')
-                                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                                <div class="invalid-feedback">{{ $message }}
+                                                                </div>
                                                                 @enderror
                                                             </optgroup>
                                                         </select>
@@ -580,11 +776,12 @@
                                                             class="form-control w-100 @error('condition') is-invalid @enderror"
                                                             id="single-default" name="condition">
                                                             <optgroup label="Kondisi Barang">
-                                                                <option value="Baik" {{ $barang->condition === "Baik" ?
-                                                                    "selected" : '' }}>Baik</option>
-                                                                <option value="Rusak" {{ $barang->condition === "Rusak"
-                                                                    ?
-                                                                    "selected" : '' }}>Rusak</option>
+                                                                <option value="Baik" {{ $barang->condition === 'Baik' ?
+                                                                    'selected' : '' }}>
+                                                                    Baik</option>
+                                                                <option value="Rusak" {{ $barang->condition === 'Rusak'
+                                                                    ? 'selected' : '' }}>
+                                                                    Rusak</option>
                                                             </optgroup>
                                                         </select>
                                                         @error('condition')
@@ -599,38 +796,54 @@
                                                             class="form-control w-100 @error('bidding_year') is-invalid @enderror"
                                                             id="single-default" name="bidding_year">
                                                             <optgroup label="Tahun Pengadaan">
-                                                                <option value="2010" {{ $barang->bidding_year == "2010"
-                                                                    ? 'selected' : '' }}>2010</option>
-                                                                <option value="2011" {{ $barang->bidding_year == "2011"
-                                                                    ? 'selected' : '' }}>2011</option>
-                                                                <option value="2012" {{ $barang->bidding_year == "2012"
-                                                                    ? 'selected' : '' }}>2012</option>
-                                                                <option value="2013" {{ $barang->bidding_year == "2013"
-                                                                    ? 'selected' : '' }}>2013</option>
-                                                                <option value="2014" {{ $barang->bidding_year == "2014"
-                                                                    ? 'selected' : '' }}>2014</option>
-                                                                <option value="2015" {{ $barang->bidding_year == "2015"
-                                                                    ? 'selected' : '' }}>2015</option>
-                                                                <option value="2016" {{ $barang->bidding_year == "2016"
-                                                                    ? 'selected' : '' }}>2016</option>
-                                                                <option value="2017" {{ $barang->bidding_year == "2017"
-                                                                    ? 'selected' : '' }}>2017</option>
-                                                                <option value="2018" {{ $barang->bidding_year == "2018"
-                                                                    ? 'selected' : '' }}>2018</option>
-                                                                <option value="2019" {{ $barang->bidding_year == "2019"
-                                                                    ? 'selected' : '' }}>2019</option>
-                                                                <option value="2020" {{ $barang->bidding_year == "2020"
-                                                                    ? 'selected' : '' }}>2020</option>
-                                                                <option value="2021" {{ $barang->bidding_year == "2021"
-                                                                    ? 'selected' : '' }}>2021</option>
-                                                                <option value="2022" {{ $barang->bidding_year == "2022"
-                                                                    ? 'selected' : '' }}>2022</option>
-                                                                <option value="2023" {{ $barang->bidding_year == "2023"
-                                                                    ? 'selected' : '' }}>2023</option>
-                                                                <option value="2024" {{ $barang->bidding_year == "2024"
-                                                                    ? 'selected' : '' }}>2024</option>
-                                                                <option value="2025" {{ $barang->bidding_year == "2025"
-                                                                    ? 'selected' : '' }}>2025</option>
+                                                                <option value="2010" {{ $barang->bidding_year == '2010'
+                                                                    ? 'selected' : '' }}>
+                                                                    2010</option>
+                                                                <option value="2011" {{ $barang->bidding_year == '2011'
+                                                                    ? 'selected' : '' }}>
+                                                                    2011</option>
+                                                                <option value="2012" {{ $barang->bidding_year == '2012'
+                                                                    ? 'selected' : '' }}>
+                                                                    2012</option>
+                                                                <option value="2013" {{ $barang->bidding_year == '2013'
+                                                                    ? 'selected' : '' }}>
+                                                                    2013</option>
+                                                                <option value="2014" {{ $barang->bidding_year == '2014'
+                                                                    ? 'selected' : '' }}>
+                                                                    2014</option>
+                                                                <option value="2015" {{ $barang->bidding_year == '2015'
+                                                                    ? 'selected' : '' }}>
+                                                                    2015</option>
+                                                                <option value="2016" {{ $barang->bidding_year == '2016'
+                                                                    ? 'selected' : '' }}>
+                                                                    2016</option>
+                                                                <option value="2017" {{ $barang->bidding_year == '2017'
+                                                                    ? 'selected' : '' }}>
+                                                                    2017</option>
+                                                                <option value="2018" {{ $barang->bidding_year == '2018'
+                                                                    ? 'selected' : '' }}>
+                                                                    2018</option>
+                                                                <option value="2019" {{ $barang->bidding_year == '2019'
+                                                                    ? 'selected' : '' }}>
+                                                                    2019</option>
+                                                                <option value="2020" {{ $barang->bidding_year == '2020'
+                                                                    ? 'selected' : '' }}>
+                                                                    2020</option>
+                                                                <option value="2021" {{ $barang->bidding_year == '2021'
+                                                                    ? 'selected' : '' }}>
+                                                                    2021</option>
+                                                                <option value="2022" {{ $barang->bidding_year == '2022'
+                                                                    ? 'selected' : '' }}>
+                                                                    2022</option>
+                                                                <option value="2023" {{ $barang->bidding_year == '2023'
+                                                                    ? 'selected' : '' }}>
+                                                                    2023</option>
+                                                                <option value="2024" {{ $barang->bidding_year == '2024'
+                                                                    ? 'selected' : '' }}>
+                                                                    2024</option>
+                                                                <option value="2025" {{ $barang->bidding_year == '2025'
+                                                                    ? 'selected' : '' }}>
+                                                                    2025</option>
                                                             </optgroup>
                                                         </select>
                                                         @error('bidding_year')
@@ -654,14 +867,16 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    {{-- <th>Foto</th> --}}
+                                    <th>No</th>
                                     <th>Nama Barang</th>
-                                    <th>Kategori Barang</th>
                                     <th>Merk</th>
-                                    <th>Kondisi</th>
-                                    <th>Tahun Pengadaan</th>
+                                    <th>Kategori Barang</th>
+                                    <th>Urutan Barang</th>
+                                    <th>Kode Barang</th>
+                                    {{-- <th>Kondisi</th> --}}
+                                    {{-- <th>Tahun Pengadaan</th> --}}
                                     <th>Ruangan</th>
-                                    <th>Aksi</th>
+                                    <th class="no-export" style="white-space: nowrap">Aksi</th>
                                 </tr>
                             </tfoot>
                         </table>
@@ -678,6 +893,11 @@
         <div class="modal-content">
             <form autocomplete="off" novalidate action="/barang" method="post" enctype="multipart/form-data">
                 @csrf
+                @if (!auth()->user()->is_admin)
+                <input type="hidden" name="instance_code" value="{{ $i->instance_code }}">
+                <input type="hidden" name="room_id" value="{{ auth()->user()->room_id }}">
+                @endif
+
                 <div class="modal-header">
                     <h5 class="modal-title">Tambah Barang</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -695,14 +915,23 @@
                         @enderror
                     </div>
                     <div class="form-group">
+                        <label for="merk">Merk <sup>(Opsional)</sup></label>
+                        <input type="text" value="{{ old('merk') }}"
+                            class="form-control @error('merk') is-invalid @enderror" id="merk" name="merk"
+                            placeholder="Merk">
+                        @error('merk')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="form-group">
                         <label class="form-label" for="single-default">
                             Barang
                         </label>
                         <select class="form-control w-100 @error('template_barang_id') is-invalid @enderror"
                             id="single-default" name="template_barang_id">
                             <optgroup label="Kategori Barang">
-                                @foreach ($template as $barang)
-                                <option value="{{ $barang->id }}">{{ $barang->name }}</option>
+                                @foreach ($templates as $template)
+                                <option value="{{ $template->id }}">{{ $template->name }}</option>
                                 @endforeach
                             </optgroup>
                         </select>
@@ -769,12 +998,55 @@
 @endsection
 @section('plugin')
 <script src="/js/datagrid/datatables/datatables.bundle.js"></script>
+<script src="/js/datatable/jszip.min.js"></script>
 <script>
     /* demo scripts for change table color */
         /* change background */
         $(document).ready(function() {
             $('#dt-basic-example').dataTable({
-                responsive: true
+                responsive: true,
+                dom: 'Bfrtip',
+                buttons: [{
+                        extend: 'print',
+                        text: 'Print',
+                        className: 'float-right btn btn-primary',
+                        exportOptions: {
+                            columns: ':not(.no-export)'
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        text: 'Download as Excel',
+                        className: 'float-right btn btn-success',
+                        exportOptions: {
+                            columns: ':not(.no-export)'
+                        }
+                    },
+                    {
+                        extend: 'colvis',
+                        text: 'Column Visibility',
+                        titleAttr: 'Col visibility',
+                        className: 'float-right mb-3 btn btn-warning',
+                        exportOptions: {
+                            columns: ':not(.no-export)'
+                        },
+                        postfixButtons: [{
+                                extend: 'print',
+                                text: 'Print',
+                                exportOptions: {
+                                    columns: ':visible:not(.no-export)'
+                                }
+                            },
+                            {
+                                extend: 'excel',
+                                text: 'Download as Excel',
+                                exportOptions: {
+                                    columns: ':visible:not(.no-export)'
+                                }
+                            }
+                        ]
+                    }
+                ]
             });
 
             $('.js-thead-colors a').on('click', function() {

@@ -1,0 +1,43 @@
+* {
+    font-family: sans-serif;
+}
+
+.code {
+    font-size: 1em;
+    font-weight: bold;
+    line-height: 1.6em;
+}
+
+/* .block:nth-child(n+4) {
+            margin-top: 0.1cm;
+        }
+
+        .block:nth-child(n+7) {
+            margin-top: 0.1cm;
+        }
+
+        .block:nth-child(n+10) {
+            margin-top: 0.1cm;
+        } */
+
+@media print {
+    .ceklist {
+        display: none !important;
+    }
+
+    .delete {
+        display: none !important;
+    }
+
+    #functions {
+        display: none !important;
+    }
+}
+
+#functions {
+    position: relative;
+}
+
+.delete {
+    margin-left: 10px;
+}

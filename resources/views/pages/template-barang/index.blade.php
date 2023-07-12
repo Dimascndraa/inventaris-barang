@@ -1,3 +1,6 @@
+@php
+use App\Models\Barang;
+@endphp
 @extends('inc.layout')
 @section('title', 'Template Barang')
 @section('content')
@@ -408,20 +411,27 @@
                             <thead>
                                 <tr>
                                     {{-- <th>Foto</th> --}}
-                                    <th>Nama</th>
+                                    <th>No</th>
+                                    <th>Nama Barang</th>
+                                    <th>Jumlah Barang</th>
                                     <th>Kode Barang</th>
-                                    <th>Merk</th>
-                                    <th>Aksi</th>
+                                    <th>Kategori</th>
+                                    <th class="no-export">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($template as $barang)
                                 <tr>
                                     {{-- <td style="white-space: normal">{{ $barang->foto }}</td> --}}
-                                    <td style="white-space: normal">{{ $barang->name }}</td>
-                                    <td style="white-space: normal">{{ $barang->barang_code }}</td>
-                                    <td style="white-space: normal">{{ $barang->merk }}</td>
+                                    <td style="white-space: normal">{{ $loop->iteration }}</td>
                                     <td style="white-space: normal">
+                                        <a href="/template_barang/{{ $barang->id }}">{{ $barang->name }}</a>
+                                    </td>
+                                    <td style="white-space: normal">{{ count(Barang::where('template_barang_id',
+                                        $barang->id)->get()) }}</td>
+                                    <td style="white-space: normal">{{ $barang->barang_code }}</td>
+                                    <td style="white-space: normal">{{ $barang->category->name }}</td>
+                                    <td style="white-space: normal" class="no-export">
                                         <button type="button" class="badge mx-1 badge-primary p-2 border-0 text-white"
                                             data-toggle="modal" data-target="#ubah-barang{{ $barang->id }}"
                                             title="Ubah">
@@ -477,6 +487,27 @@
                                                         @enderror
                                                     </div>
                                                     <div class="form-group">
+                                                        <label class="form-label" for="single-default">
+                                                            Kategori Barang
+                                                        </label>
+                                                        <select
+                                                            class="form-control w-100 @error('category_id') is-invalid @enderror"
+                                                            id="single-default" name="category_id">
+                                                            <optgroup label="Kategori Barang">
+                                                                @foreach ($categories as $category)
+                                                                <option value="{{ $category->id }}" {{
+                                                                    old('category_id', $barang->category_id) ===
+                                                                    $category->id ? "selected" : '' }}>
+                                                                    {{ $category->name }}
+                                                                </option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                        </select>
+                                                        @error('category_id')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="form-group">
                                                         <label for="name">Nama Barang</label>
                                                         <input type="text" value="{{ old('name', $barang->name) }}"
                                                             class="form-control @error('name') is-invalid @enderror"
@@ -498,25 +529,17 @@
                                                         @enderror
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="merk">Merek Barang</label>
-                                                        <input type="text" value="{{ old('merk', $barang->merk) }}"
-                                                            class="form-control @error('merk') is-invalid @enderror"
-                                                            id="merk" name="merk" placeholder="Merek Barang">
-                                                        @error('merk')
-                                                        <div class="invalid-feedback">{{ $message }}</div>
-                                                        @enderror
-                                                    </div>
-                                                    <div class="form-group">
                                                         <label for="condition">Kondisi Barang</label>
                                                         <select
                                                             class="form-control w-100 @error('condition') is-invalid @enderror"
                                                             id="single-default" name="condition">
                                                             <optgroup label="Kondisi Barang">
-                                                                <option value="Baik" {{ $barang->condition === "Baik" ?
-                                                                    "selected" : '' }}>Baik</option>
-                                                                <option value="Rusak" {{ $barang->condition === "Rusak"
-                                                                    ?
-                                                                    "selected" : '' }}>Rusak</option>
+                                                                <option value="Baik" {{ $barang->condition === 'Baik' ?
+                                                                    'selected' : '' }}>
+                                                                    Baik</option>
+                                                                <option value="Rusak" {{ $barang->condition === 'Rusak'
+                                                                    ? 'selected' : '' }}>
+                                                                    Rusak</option>
                                                             </optgroup>
                                                         </select>
                                                         @error('condition')
@@ -541,10 +564,12 @@
                             <tfoot>
                                 <tr>
                                     {{-- <th>Foto</th> --}}
+                                    <th>No</th>
                                     <th>Nama Barang</th>
+                                    <th>Jumlah Barang</th>
                                     <th>Kode Barang</th>
-                                    <th>Merk</th>
-                                    <th>Aksi</th>
+                                    <th>Kategori</th>
+                                    <th class="no-export">Aksi</th>
                                 </tr>
                             </tfoot>
                         </table>
@@ -615,15 +640,6 @@
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div class="form-group">
-                        <label for="merk">Merek Barang (Opsional)</label>
-                        <input type="text" value="{{ old('merk') }}"
-                            class="form-control @error('merk') is-invalid @enderror" id="merk" name="merk"
-                            placeholder="Merek Barang">
-                        @error('merk')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -639,12 +655,56 @@
 @endsection
 @section('plugin')
 <script src="/js/datagrid/datatables/datatables.bundle.js"></script>
+<script src="/js/datatable/jszip.min.js"></script>
+
 <script>
     /* demo scripts for change table color */
         /* change background */
         $(document).ready(function() {
             $('#dt-basic-example').dataTable({
-                responsive: true
+                responsive: true,
+                dom: 'Bfrtip',
+                buttons: [{
+                        extend: 'print',
+                        text: 'Print',
+                        className: 'float-right btn btn-primary',
+                        exportOptions: {
+                            columns: ':not(.no-export)'
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        text: 'Download as Excel',
+                        className: 'float-right btn btn-success',
+                        exportOptions: {
+                            columns: ':not(.no-export)'
+                        }
+                    },
+                    {
+                        extend: 'colvis',
+                        text: 'Column Visibility',
+                        titleAttr: 'Col visibility',
+                        className: 'float-right mb-3 btn btn-warning',
+                        exportOptions: {
+                            columns: ':not(.no-export)'
+                        },
+                        postfixButtons: [{
+                                extend: 'print',
+                                text: 'Print',
+                                exportOptions: {
+                                    columns: ':visible:not(.no-export)'
+                                }
+                            },
+                            {
+                                extend: 'excel',
+                                text: 'Download as Excel',
+                                exportOptions: {
+                                    columns: ':visible:not(.no-export)'
+                                }
+                            }
+                        ]
+                    }
+                ]
             });
 
             $('.js-thead-colors a').on('click', function() {

@@ -4,40 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Barang;
 use App\Models\BarangCategory;
+use App\Models\ControlPanel;
 use App\Models\Room;
+use App\Models\TemplateBarang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class RoomController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         return view('pages.rooms.index', [
-            'rooms' => Room::all()
+            'rooms' => Room::orderBy('created_at', 'desc')->get(),
+            'i' => ControlPanel::all()->first()
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -50,40 +32,18 @@ class RoomController extends Controller
         return redirect('/rooms')->with('success', 'Ruangan berhasil ditambahkan!');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Room  $room
-     * @return \Illuminate\Http\Response
-     */
     public function show(Barang $barang, Room $room)
     {
         return view('pages.rooms.show', [
             'title' => "Ruang $room->name",
             'room' => $room,
             'categories' => BarangCategory::all(),
-            'barangs' => $barang->where('room_id', $room->id)->get()
+            'barangs' => $barang->where('room_id', $room->id)->get(),
+            'i' => ControlPanel::all()->first(),
+            'templates' => TemplateBarang::all(),
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Room  $room
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Room $room)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Room  $room
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, Room $room)
     {
         $validatedData = $request->validate([
@@ -96,12 +56,6 @@ class RoomController extends Controller
         return redirect('/rooms')->with('success', 'Ruangan berhasil diubah!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Room  $room
-     * @return \Illuminate\Http\Response
-     */
     public function destroy(Room $room)
     {
         Room::destroy($room->id);
@@ -111,42 +65,78 @@ class RoomController extends Controller
     public function storeBarang(Request $request)
     {
         $validatedData = $request->validate([
-            'name' => "required|max:255",
-            'barang_code' => "required|max:255",
-            'category_id' => "required|max:255",
-            'room_id' => "required|max:255",
-            'foto' => "required|max:5120",
-            'merk' => "required|max:5120",
+            'custom_name' => "max:255",
+            'template_barang_id' => "required|max:255",
             'condition' => "required|max:5120",
             'bidding_year' => "required|max:255",
+            'merk' => "max:255",
+            'urutan_barang' => "max:255",
+            'room_id' => "max:255",
         ]);
-        $validatedData['foto'] = $request->file('foto')->store('barang');
-        $validatedData['room_id'] = $request->room_id;
 
+        $room_code = Room::where('id', $request['room_id'])->first()->room_code;
+
+        $barang_id = $request->template_barang_id;
+        $template = TemplateBarang::where('id', $barang_id)->first();
+
+        // Dapatkan urutan barang terakhir berdasarkan template_barang
+        $lastUrutanBarang = Barang::where('template_barang_id', $template->id)
+            ->where('urutan_barang', '<>', '0')
+            ->orderByDesc('urutan_barang')
+            ->first();
+
+        if ($lastUrutanBarang) {
+            $urutanBarang = intval($lastUrutanBarang->urutan_barang) + 1;
+        } else {
+            $urutanBarang = 1;
+        }
+
+        // Set urutan_barang dengan format "001"
+        $validatedData['urutan_barang'] = str_pad($urutanBarang, 3, '0', STR_PAD_LEFT);
+
+        $item_code = $request['instance_code'] . "/" . $template->category->category_code . "/" . $room_code . "/" . $template->barang_code . "." . $template->name . " " . $validatedData['urutan_barang'] . "/" . $request->bidding_year;
+        $validatedData['item_code'] = $item_code;
+
+        // return $validatedData;
         Barang::create($validatedData);
-        return redirect('/room')->with('success', 'Barang berhasil ditambahkan!');
+        return redirect("/rooms/$request->room_id")->with('success', 'Barang berhasil ditambahkan!');
     }
 
     public function updateBarang(Request $request, Barang $barang)
     {
         $validatedData = $request->validate([
-            'name' => "required|max:255",
-            'barang_code' => "required|max:255",
-            'category_id' => "required|max:255",
-            'foto' => "file|max:5120",
-            'merk' => "required|max:255",
+            'custom_name' => "max:255",
+            'template_barang_id' => "required|max:255",
+            'item_code' => "required|max:255",
+            'merk' => "max:255",
+            'urutan_barang' => "max:255",
             'condition' => "required|max:255",
             'bidding_year' => "required|max:255",
         ]);
 
-        if ($request->file('foto')) {
-            if ($request->oldImage) {
-                Storage::delete($barang->foto);
-                $validatedData['foto'] = $request->file('foto')->store('barang');
-            }
-        }
-
         Barang::where('id', $barang->id)->update($validatedData);
-        return redirect('/barang')->with('success', 'Barang berhasil diubah!');
+        return redirect("/rooms/$request->room_id")->with('success', 'Barang berhasil diubah!');
+    }
+
+    public function destroyBarang(Barang $barang, Request $request)
+    {
+        // return $barang;
+        Barang::destroy($barang->id);
+        return redirect("/rooms/$request->room_id")->with('success', 'barang berhasil dihapus!');
+    }
+
+    public function printLabel(Request $request)
+    {
+        $barang = Barang::where('room_id', $request->room_id)->get('item_code');
+        $room_id = Room::where('id', $request->room_id)->first('id')->id;
+        return view('pages.rooms.print-label', [
+            'items' => $barang,
+            'room_id' => $room_id
+        ]);
+
+        // return $barang;
+
+        // Barang::destroy($barang->id);
+        // return redirect("/rooms/$request->room_id")->with('success', 'barang berhasil dihapus!');
     }
 }

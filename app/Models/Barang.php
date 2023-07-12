@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Barang extends Model
 {
     protected $guarded = ['id'];
+    protected $with = ['room', 'template_barang'];
 
     use HasFactory;
 
@@ -17,6 +18,12 @@ class Barang extends Model
     }
 
     public function template_barang()
+    {
+        return $this->belongsTo(TemplateBarang::class);
+    }
+
+    // Relasi dengan template_barang
+    public function templateBarang()
     {
         return $this->belongsTo(TemplateBarang::class);
     }

@@ -18,8 +18,7 @@ class CreateTemplateBarangsTable extends Migration
             $table->integer('category_id');
             $table->string('name');
             $table->string('barang_code');
-            $table->string('foto');
-            $table->string('merk')->nullable();
+            $table->string('foto')->nullable();
             $table->timestamps();
         });
     }
